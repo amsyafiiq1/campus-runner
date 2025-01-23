@@ -5,7 +5,7 @@ import {
 import "react-native-get-random-values";
 import { Button, useTheme, View } from "tamagui";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
-import { StyleSheet, Text } from "react-native";
+import { StyleSheet } from "react-native";
 import { useRef, useState, useEffect } from "react";
 import { Locate, Search } from "@tamagui/lucide-icons";
 import * as Location from "expo-location";
@@ -99,10 +99,8 @@ const PickupPage = () => {
         longitude: location.coords.longitude,
       });
 
-      const { name, street, city, region, postalCode, country } = results[0];
-      const address =
-        results[0].formattedAddress ||
-        `${name}, ${street}, ${city}, ${region}, ${postalCode}, ${country}`;
+      const { name, city, region, postalCode } = results[0];
+      const address = `${name}, ${city}, ${region}` || "";
 
       setSelectedLocation({
         latitude: location.coords.latitude,
@@ -132,22 +130,11 @@ const PickupPage = () => {
         longitude,
       });
 
-      console.log("Reverse geocoding results:", results);
-
       if (results.length > 0) {
-        console.log(results[0]);
-        const { name, street, city, region, postalCode, country } = results[0];
-        const address =
-          results[0].formattedAddress ||
-          `${name}, ${street}, ${city}, ${region}, ${postalCode}, ${country}`;
+        const { name, city, region, postalCode } = results[0];
+        const address = `${name}, ${city}, ${region}` || "";
 
         setSelectedLocation({
-          latitude,
-          longitude,
-          address,
-        });
-
-        console.log("Selected location:", {
           latitude,
           longitude,
           address,
@@ -193,7 +180,7 @@ const PickupPage = () => {
         styles={{
           container: {
             flex: 0,
-            backgroundColor: color.black4.val,
+            backgroundColor: color.background.val,
             margin: 12,
             position: "absolute",
             top: 0,
@@ -202,16 +189,16 @@ const PickupPage = () => {
             borderRadius: 12,
           },
           textInput: {
-            backgroundColor: color.black4.val,
+            backgroundColor: color.background.val,
             color: color.accentColor.val,
             borderRadius: 12,
           },
           textInputContainer: {
-            backgroundColor: color.black4.val,
+            backgroundColor: color.background.val,
             borderRadius: 12,
           },
           row: {
-            backgroundColor: color.black4.val,
+            backgroundColor: color.background.val,
             borderBottomLeftRadius: 12,
           },
           description: {
@@ -222,7 +209,7 @@ const PickupPage = () => {
         onPress={(data, details) => {
           if (details) {
             const { lat, lng } = details.geometry.location;
-            console.log("Selected location:", details.geometry.location);
+
             setSelectedLocation({
               latitude: lat,
               longitude: lng,
@@ -240,7 +227,11 @@ const PickupPage = () => {
         query={{
           key: MAPS_API_KEY,
           language: "en",
+          components: "country:my",
         }}
+        renderDescription={(data) =>
+          data.description.split(",").slice(0, -1).join(",")
+        } // Remove last segment (country)
         enablePoweredByContainer={false}
       />
       <MapView
@@ -265,8 +256,19 @@ const PickupPage = () => {
         <Button
           circular
           onPress={getCurrentLocation}
-          themeInverse
           borderWidth={0.5}
+          $theme-dark={{
+            backgroundColor: color.gray11Light.val,
+            pressStyle: {
+              backgroundColor: color.gray12Light.val,
+            },
+          }}
+          $theme-light={{
+            backgroundColor: color.gray11Light.val,
+            pressStyle: {
+              backgroundColor: color.gray12Light.val,
+            },
+          }}
           borderColor={color.background.val}
         >
           <Locate size={"$1"} color={color.background.val} />

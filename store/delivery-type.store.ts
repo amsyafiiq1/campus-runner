@@ -1,7 +1,7 @@
 import { supabase } from "lib/supabase";
 import { create } from "zustand";
 
-interface DeliveryType {
+export interface DeliveryType {
   id: number;
   name: string;
   description: string;

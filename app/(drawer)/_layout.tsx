@@ -1,5 +1,5 @@
 import Drawer from "expo-router/drawer";
-import { Home, Menu } from "@tamagui/lucide-icons";
+import { Home, ListOrdered, Menu } from "@tamagui/lucide-icons";
 import { useTheme, XStack } from "tamagui";
 import DrawerContent from "components/DrawerContent";
 
@@ -27,6 +27,20 @@ const DrawerLayout = () => {
           drawerLabelStyle: { color: color.accentColor.val },
           drawerActiveBackgroundColor: color.red6.val,
           drawerIcon: () => <Home size={"$1"} color={color.accentColor.val} />,
+        }}
+      />
+      <Drawer.Screen
+        name="orders"
+        options={{
+          title: "Order History",
+          headerTitleAlign: "center",
+          drawerLabel: "Order",
+          headerStyle: { backgroundColor: color.colorTransparent.val },
+          drawerLabelStyle: { color: color.accentColor.val },
+          drawerActiveBackgroundColor: color.red6.val,
+          drawerIcon: () => (
+            <ListOrdered size={"$1"} color={color.accentColor.val} />
+          ),
         }}
       />
     </Drawer>

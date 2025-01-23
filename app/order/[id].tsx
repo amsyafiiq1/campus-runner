@@ -1,14 +1,13 @@
 import { useLocalSearchParams } from "expo-router";
 import { View, Text } from "tamagui";
 
-const DropOffPage = () => {
-  const { type } = useLocalSearchParams();
-
+const OrderPage = () => {
+  const { id } = useLocalSearchParams();
   return (
     <View>
-      <Text>{type}</Text>
+      <Text>Order {id}</Text>
     </View>
   );
 };
 
-export default DropOffPage;
+export default OrderPage;

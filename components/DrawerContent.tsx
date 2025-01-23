@@ -4,16 +4,21 @@ import {
   DrawerItemList,
 } from "@react-navigation/drawer";
 import { LogOut } from "@tamagui/lucide-icons";
+import { useColorScheme } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthStore } from "store/auth.store";
 import { SizableText, useTheme, View } from "tamagui";
 
 export default function DrawerContent(props: any) {
   const color = useTheme();
+  const colorScheme = useColorScheme();
   const { top, bottom } = useSafeAreaInsets();
 
   return (
-    <View flex={1} backgroundColor={color.red1.val}>
+    <View
+      flex={1}
+      backgroundColor={colorScheme === "dark" ? color.red1.val : color.red2.val}
+    >
       <DrawerContentScrollView {...props}>
         <DrawerItemList {...props} />
         <DrawerItem

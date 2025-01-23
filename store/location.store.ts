@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { DeliveryType } from "./delivery-type.store";
 
 export interface Location {
+  id: number | undefined;
   latitude: number;
   longitude: number;
   address: string | undefined;

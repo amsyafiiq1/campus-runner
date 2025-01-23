@@ -67,7 +67,9 @@ const LoginScreen = () => {
             display={showPassword ? "none" : "block"}
           />
         </XStack>
-        <Button onPress={handleLogin}>Log In</Button>
+        <Button onPress={handleLogin} theme={"red_active"}>
+          Log In
+        </Button>
 
         <TouchableOpacity
           style={{

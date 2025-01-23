@@ -10,7 +10,7 @@ import {
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
 import { Provider } from "./Provider";
-import { useTheme } from "tamagui";
+import { SizableText, useTheme, XStack, Image } from "tamagui";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export {
@@ -86,6 +86,30 @@ function RootLayoutNav() {
             name="search"
             options={{
               headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="order"
+            options={{
+              header: () => (
+                <XStack
+                  alignItems="center"
+                  justifyContent="center"
+                  paddingTop={"$11"}
+                  height={50}
+                  paddingBottom={"$4"}
+                  backgroundColor={"$background"}
+                >
+                  <Image
+                    source={require("../assets/images/icon.png")}
+                    style={{ width: 100, height: 100 }}
+                  />
+                </XStack>
+              ),
+
+              headerShadowVisible: false,
+              headerTitleAlign: "center",
+              headerBackVisible: false,
             }}
           />
         </Stack>

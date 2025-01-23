@@ -1,7 +1,7 @@
-import { Stack } from "expo-router";
+import { Slot, Stack } from "expo-router";
 
 const OrderLayout = () => {
-  return <Stack></Stack>;
+  return <Stack />;
 };
 
 export default OrderLayout;

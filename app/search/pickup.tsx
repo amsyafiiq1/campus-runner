@@ -32,6 +32,7 @@ const PickupPage = () => {
     longitudeDelta: 0.002,
   });
   const [selectedLocation, setSelectedLocation] = useState({
+    id: undefined,
     latitude: 0,
     longitude: 0,
     address: "",
@@ -103,6 +104,7 @@ const PickupPage = () => {
       const address = `${name}, ${city}, ${region}` || "";
 
       setSelectedLocation({
+        id: undefined,
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
         address,
@@ -135,6 +137,7 @@ const PickupPage = () => {
         const address = `${name}, ${city}, ${region}` || "";
 
         setSelectedLocation({
+          id: undefined,
           latitude,
           longitude,
           address,
@@ -211,6 +214,7 @@ const PickupPage = () => {
             const { lat, lng } = details.geometry.location;
 
             setSelectedLocation({
+              id: undefined,
               latitude: lat,
               longitude: lng,
               address: data.description,

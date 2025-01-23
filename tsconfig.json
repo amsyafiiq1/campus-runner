@@ -1,7 +1,10 @@
 {
   "extends": "./tsconfig.base",
   "compilerOptions": {
-    "types": ["react-native"]
+    "types": ["react-native"],
+    "paths": {
+      "@/*": ["*"]
+    }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
 }

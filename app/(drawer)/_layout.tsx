@@ -1,15 +1,24 @@
 import Drawer from "expo-router/drawer";
 import { Home, ListOrdered, Menu } from "@tamagui/lucide-icons";
-import { useTheme, XStack } from "tamagui";
+import { Image, useTheme, XStack } from "tamagui";
 import DrawerContent from "components/DrawerContent";
+import { useColorScheme } from "react-native";
 
 const DrawerLayout = () => {
   const color = useTheme();
+  const colorScheme = useColorScheme();
 
   return (
     <Drawer
       drawerContent={DrawerContent}
       screenOptions={({ navigation }) => ({
+        headerShadowVisible: false,
+        headerBackgroundContainerStyle: {
+          backgroundColor:
+            colorScheme === "dark"
+              ? color.colorTransparent.val
+              : color.gray4.val,
+        },
         headerLeft: () => (
           <XStack onPress={() => navigation.openDrawer()} padding={16}>
             <Menu size={24} color={"$accentForeground"} />
@@ -20,22 +29,28 @@ const DrawerLayout = () => {
       <Drawer.Screen
         name="index"
         options={{
-          title: "Campus Runner",
+          headerShadowVisible: false,
+          headerTitle: () => (
+            <Image
+              source={require("../../assets/images/icon.png")}
+              style={{ width: 100, height: 100 }}
+            />
+          ),
           headerTitleAlign: "center",
           drawerLabel: "Home",
-          headerStyle: { backgroundColor: color.colorTransparent.val },
+          headerStyle: { backgroundColor: "transparent" },
           drawerLabelStyle: { color: color.accentColor.val },
           drawerActiveBackgroundColor: color.red6.val,
           drawerIcon: () => <Home size={"$1"} color={color.accentColor.val} />,
         }}
       />
       <Drawer.Screen
-        name="orders"
+        name="(tabs)"
         options={{
           title: "Order History",
           headerTitleAlign: "center",
           drawerLabel: "Order",
-          headerStyle: { backgroundColor: color.colorTransparent.val },
+          headerStyle: { backgroundColor: "transparent" },
           drawerLabelStyle: { color: color.accentColor.val },
           drawerActiveBackgroundColor: color.red6.val,
           drawerIcon: () => (

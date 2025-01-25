@@ -23,7 +23,7 @@ export const ORDER_STATUS = {
   ON_GOING: "ON_GOING",
   PICKED_UP: "PICKED_UP",
   COMPLETED: "COMPLETED",
-  CANCELED: "CANCELED",
+  CANCELED: "CANCELLED",
 } as const;
 
 // For type annotations
@@ -31,7 +31,19 @@ export type OrderStatus = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS];
 
 export interface Runner {
   id: number;
+  vehicle: Vehicle;
   user: User;
+}
+
+export interface Vehicle {
+  id: number;
+  vehicleType: VehicleType;
+  plateNo: string;
+}
+
+export interface VehicleType {
+  id: number;
+  name: string;
 }
 
 interface CustomerOrdersStore {
@@ -45,6 +57,15 @@ interface CustomerOrdersStore {
   getCompleted: (customerId: number) => Promise<void>;
   getCancelled: (customerId: number) => Promise<void>;
   liveUpdate: (order: Order) => void;
+
+  addOrder: (
+    pickup: Location,
+    dropoff: Location,
+    type: DeliveryType,
+    remarks: string,
+    customerId: number,
+    payment: number
+  ) => Promise<Order>;
 }
 
 export const useCustomerOrdersStore = create<CustomerOrdersStore>((set) => ({
@@ -66,6 +87,10 @@ export const useCustomerOrdersStore = create<CustomerOrdersStore>((set) => ({
       orderType:Order_Type!order_type_id (*),
       runner:Runner!runner_id (
         id,
+        vehicle:Vehicle_Details!vehicle_id (
+          id,
+          vehicleType:Vehicle_Type!type_id (*)
+        ),
         user:User(*)
       ),
       customer:Customer!customer_id (
@@ -102,6 +127,10 @@ export const useCustomerOrdersStore = create<CustomerOrdersStore>((set) => ({
       orderType:Order_Type!order_type_id (*),
       runner:Runner!runner_id (
         id,
+        vehicle:Vehicle_Details!vehicle_id (
+          id,
+          vehicleType:Vehicle_Type!type_id (*)
+        ),
         user:User(*)
       ),
       customer:Customer!customer_id (
@@ -115,7 +144,8 @@ export const useCustomerOrdersStore = create<CustomerOrdersStore>((set) => ({
       .eq("customer_id", customerId)
       .or(
         `order_status.eq.${ORDER_STATUS.OPEN},order_status.eq.${ORDER_STATUS.ON_GOING},order_status.eq.${ORDER_STATUS.PICKED_UP}`
-      );
+      )
+      .order("created_at", { ascending: false });
 
     if (error) {
       set({ error });
@@ -140,6 +170,10 @@ export const useCustomerOrdersStore = create<CustomerOrdersStore>((set) => ({
       orderType:Order_Type!order_type_id (*),
       runner:Runner!runner_id (
         id,
+        vehicle:Vehicle_Details!vehicle_id (
+          id,
+          vehicleType:Vehicle_Type!type_id (*)
+        ),
         user:User(*)
       ),
       customer:Customer!customer_id (
@@ -151,7 +185,8 @@ export const useCustomerOrdersStore = create<CustomerOrdersStore>((set) => ({
     `
       )
       .eq("customer_id", customerId)
-      .eq("order_status", ORDER_STATUS.COMPLETED);
+      .eq("order_status", ORDER_STATUS.COMPLETED)
+      .order("created_at", { ascending: false });
 
     if (error) {
       set({ error });
@@ -187,7 +222,8 @@ export const useCustomerOrdersStore = create<CustomerOrdersStore>((set) => ({
     `
       )
       .eq("customer_id", customerId)
-      .eq("order_status", ORDER_STATUS.CANCELED);
+      .eq("order_status", ORDER_STATUS.CANCELED)
+      .order("created_at", { ascending: false });
 
     if (error) {
       set({ error });
@@ -230,5 +266,95 @@ export const useCustomerOrdersStore = create<CustomerOrdersStore>((set) => ({
         }
       )
       .subscribe();
+  },
+
+  addOrder: async (pickup, dropoff, type, remarks, customerId, payment) => {
+    set({ error: null });
+    const { data: locations, error: locError } = await supabase
+      .from("Location")
+      .insert([
+        {
+          latitude: pickup.latitude,
+          longitude: pickup.longitude,
+          address: pickup.address,
+        },
+        {
+          latitude: dropoff.latitude,
+          longitude: dropoff.longitude,
+          address: dropoff.address,
+        },
+      ])
+      .select("*");
+
+    if (locError) {
+      console.log("Error adding locations", locError);
+      set({ error: locError });
+      return;
+    }
+
+    if (!locations) {
+      console.log("No locations added");
+      return;
+    }
+
+    if (locations) {
+      const [pickLoc, dropLoc] = locations;
+
+      const { data, error } = await supabase
+        .from("Order")
+        .insert([
+          {
+            pickup_id: pickLoc.id,
+            dropoff_id: dropLoc.id,
+            order_type_id: type.id,
+            remarks,
+            customer_id: customerId,
+            order_status: ORDER_STATUS.OPEN,
+            payment,
+          },
+        ])
+        .select(
+          `
+        id,
+        remarks,
+        payment,
+        pickup:Location!pickup_id (*),
+        dropoff:Location!dropoff_id (*),
+        orderType:Order_Type!order_type_id (*),
+        runner:Runner!runner_id (
+          id,
+          vehicle:Vehicle_Details!vehicle_id (
+            id,
+            vehicleType:Vehicle_Type!type_id (*)
+          ),
+          user:User(*)
+        ),
+        customer:Customer!customer_id (
+          id, 
+          user:User(*)
+        ),
+        orderStatus:order_status,
+        createdAt: created_at
+      `
+        )
+        .single();
+
+      if (error) {
+        console.log("Error adding order", error);
+        set({ error });
+        return;
+      }
+
+      console.log("Order added", data);
+
+      if (data) {
+        set((state) => ({
+          orders: [...state.orders, data as any],
+          ongoing: [...state.ongoing, data as any],
+          error: null,
+        }));
+        return data as any;
+      }
+    }
   },
 }));

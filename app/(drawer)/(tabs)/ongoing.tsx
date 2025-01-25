@@ -14,6 +14,8 @@ import {
 } from "tamagui";
 import { Circle, MapPin } from "@tamagui/lucide-icons";
 import { router } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 const OrdersPage = () => {
   const color = useTheme();
@@ -24,6 +26,14 @@ const OrdersPage = () => {
   useEffect(() => {
     getOngoing(user?.id!);
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (user?.id) {
+        getOngoing(user.id);
+      }
+    }, [user])
+  );
 
   return (
     <ScrollView
@@ -48,9 +58,10 @@ const OrdersPage = () => {
             elevation={6}
             onPress={() => {
               router.push({
-                pathname: "/order/[id]",
+                pathname: "/order/details/[id]",
                 params: { id: order.id, status: "ongoing" },
               });
+              return;
             }}
           >
             <YStack gap={"$3"}>

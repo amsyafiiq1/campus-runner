@@ -9,7 +9,6 @@ const AppScreen = () => {
 
   useEffect(() => {
     supabase.auth.onAuthStateChange(async (event, session) => {
-      // console.log("Auth event:", event, session?.user.email);
       if (event === "SIGNED_OUT" || session === null) {
         router.replace("/(auth)/login");
       } else if (event === "SIGNED_IN" || session !== null) {

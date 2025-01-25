@@ -10,6 +10,7 @@ interface RunnerLocationStore {
   runnerLocation: RunnerLocation;
 
   getRunnerLocation: (runnerId: number) => Promise<void>;
+  resetRunnerLocation: () => void;
 }
 
 export const useRunnerLocationStore = create<RunnerLocationStore>((set) => ({
@@ -43,7 +44,7 @@ export const useRunnerLocationStore = create<RunnerLocationStore>((set) => ({
       });
     }
 
-    const liveLocation = supabase
+    supabase
       .channel("runner_live_location")
       .on(
         "postgres_changes",
@@ -65,5 +66,13 @@ export const useRunnerLocationStore = create<RunnerLocationStore>((set) => ({
         }
       )
       .subscribe();
+  },
+  resetRunnerLocation: () => {
+    set({
+      runnerLocation: {
+        latitude: 0,
+        longitude: 0,
+      },
+    });
   },
 }));

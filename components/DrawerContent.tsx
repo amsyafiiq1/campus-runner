@@ -4,6 +4,7 @@ import {
   DrawerItemList,
 } from "@react-navigation/drawer";
 import { LogOut } from "@tamagui/lucide-icons";
+import { router } from "expo-router";
 import { useColorScheme } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthStore } from "store/auth.store";
@@ -25,6 +26,7 @@ export default function DrawerContent(props: any) {
           label={"Log Out"}
           onPress={function (): void {
             useAuthStore.getState().signOut();
+            router.dismissAll();
           }}
           icon={() => <LogOut />}
         />

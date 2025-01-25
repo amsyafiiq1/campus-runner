@@ -6,11 +6,17 @@ import {
   NotebookPen,
 } from "@tamagui/lucide-icons";
 import { router } from "expo-router";
-import { createElement, useCallback, useEffect, useRef, useState } from "react";
+import {
+  createElement,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+} from "react";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { useDeliveryTypeStore } from "store/delivery-type.store";
 import { useLocationStore } from "store/location.store";
-import { StyleSheet } from "react-native";
 import {
   XStack,
   Card,
@@ -24,6 +30,10 @@ import {
   useTheme,
   Input,
 } from "tamagui";
+import { useLatLonDistance } from "lib/distance"; // Adjust path if needed
+import { useCustomerOrdersStore } from "@/store/customer-orders.store";
+import { useAuthStore } from "@/store/auth.store";
+import { Alert } from "react-native";
 
 const iconMap = {
   Utensils: Utensils,
@@ -42,32 +52,85 @@ const HomePage = () => {
   }, []);
 
   const bottomSheetRef = useRef<BottomSheet>(null);
-  // const snapPoints = useMemo(() => ["50%"], []);
 
   // callbacks
-  const handleSheetChanges = useCallback((index: number) => {
-    console.log("handleSheetChanges", index);
-  }, []);
+  const handleSheetChanges = useCallback((index: number) => {}, []);
 
   const pickup = useLocationStore((state) => state.pickup);
   const dropoff = useLocationStore((state) => state.dropoff);
   const type = useLocationStore((state) => state.type);
   const [remarks, setRemarks] = useState("");
   const setType = useLocationStore((state) => state.setDeliveryType);
+  const addOrder = useCustomerOrdersStore((state) => state.addOrder);
+  const error = useCustomerOrdersStore((state) => state.error);
+  const user = useAuthStore((state) => state.user);
+
+  const distance = useLatLonDistance(pickup, dropoff);
+  const [price, setPrice] = useState<number>(0);
 
   const handleSelectOrderType = (id: string) => {
     const selectedType = orderTypes.find((type) => type.id.toString() === id);
     setType(selectedType ?? undefined);
   };
 
-  useEffect(() => {
+  const handleAddOrder = async () => {
     if (pickup.address && dropoff.address && type) {
-      console.log("open bottom sheet");
+      const order = await addOrder(
+        pickup,
+        dropoff,
+        type,
+        remarks,
+        user?.id!,
+        price
+      );
+      if (error) {
+        Alert.alert("Error", error.message);
+      } else {
+        useLocationStore.getState().setPickup({
+          id: 0,
+          latitude: 0,
+          longitude: 0,
+          address: undefined,
+        });
+        useLocationStore.getState().setDropoff({
+          id: 0,
+          latitude: 0,
+          longitude: 0,
+          address: undefined,
+        });
+        useLocationStore.getState().setDeliveryType(undefined);
+
+        router.push({
+          pathname: "/order/details/[id]",
+          params: { id: order.id },
+        });
+      }
+    }
+  };
+
+  const canOpenSheet = useMemo(() => {
+    return Boolean(pickup.address && dropoff.address && type);
+  }, [type]);
+
+  useEffect(() => {
+    if (canOpenSheet) {
       bottomSheetRef.current?.snapToIndex(0);
     } else {
       bottomSheetRef.current?.close();
     }
-  }, [pickup.address, dropoff.address, type]);
+  }, [canOpenSheet]);
+
+  useEffect(() => {
+    if (distance) {
+      const price = distance * 0.75;
+
+      if (price < 1) {
+        setPrice(1);
+        return;
+      }
+      setPrice(price);
+    }
+  }, [distance]);
 
   return (
     <View gap={"$4"} padding={"$4"} flex={1}>
@@ -152,27 +215,12 @@ const HomePage = () => {
         backgroundStyle={{
           backgroundColor: color.gray2.val,
         }}
-        handleIndicatorStyle={{
-          backgroundColor: color.red10.val,
-        }}
         handleStyle={{
           display: "none",
-        }}
-        style={{
-          shadowColor: "#000000",
-          shadowOffset: {
-            width: 0,
-            height: 12,
-          },
-          shadowOpacity: 1,
-          shadowRadius: 16.0,
-
-          elevation: 24,
         }}
       >
         <BottomSheetView
           style={{
-            backgroundColor: color.gray2.val,
             flex: 1,
           }}
         >
@@ -190,20 +238,13 @@ const HomePage = () => {
               gap={"$4"}
             >
               <Text>Total</Text>
-              <Text fontSize={"$6"}>RM10.00</Text>
+              <Text fontSize={"$6"}>
+                {price ? `RM${price.toFixed(2)}` : "-"}
+              </Text>
             </View>
             <Button
               onPress={() => {
-                console.log(
-                  "pickup",
-                  pickup,
-                  "dropoff",
-                  dropoff,
-                  "type",
-                  type,
-                  "remarks",
-                  remarks
-                );
+                handleAddOrder();
               }}
               theme={"red"}
               animatePresence
@@ -218,15 +259,3 @@ const HomePage = () => {
 };
 
 export default HomePage;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "grey",
-  },
-  contentContainer: {
-    flex: 1,
-    padding: 36,
-    alignItems: "center",
-  },
-});

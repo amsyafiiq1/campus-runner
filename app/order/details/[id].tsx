@@ -126,7 +126,8 @@ const OrderDetailsPage = () => {
                 <PhoneCall size={14} />
                 Call
               </Button>
-              {status === "ongoing" && (
+              {(order.orderStatus === ORDER_STATUS.ON_GOING ||
+                order.orderStatus === ORDER_STATUS.PICKED_UP) && (
                 <Button
                   flex={1}
                   theme={"red"}
@@ -206,20 +207,21 @@ const OrderDetailsPage = () => {
         px={"$4"}
         gap={"$4"}
       >
-        {order?.orderStatus !== ORDER_STATUS.CANCELED && (
-          <Button
-            theme={"red"}
-            onPress={() => {
-              useSelectedOrderStore.getState().cancelOrder(Number(id));
-            }}
-            disabled={
-              order?.orderStatus !== ORDER_STATUS.OPEN &&
-              order?.orderStatus !== ORDER_STATUS.ON_GOING
-            }
-          >
-            Cancel
-          </Button>
-        )}
+        {order?.orderStatus !== ORDER_STATUS.CANCELED &&
+          order?.orderStatus !== ORDER_STATUS.COMPLETED && (
+            <Button
+              theme={"red"}
+              onPress={() => {
+                useSelectedOrderStore.getState().cancelOrder(Number(id));
+              }}
+              disabled={
+                order?.orderStatus !== ORDER_STATUS.OPEN &&
+                order?.orderStatus !== ORDER_STATUS.ON_GOING
+              }
+            >
+              Cancel
+            </Button>
+          )}
       </View>
     </>
   );
